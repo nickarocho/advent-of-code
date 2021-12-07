@@ -4,19 +4,21 @@ import input from "./directions.js";
 function travel(directions) {
   let depth = 0;
   let horizontal = 0;
+  let aim = 0;
 
   for (let i = 0; i < directions.length; i++) {
     const [direction, distanceStr] = directions[i].split(" ");
     const distanceInt = parseInt(distanceStr);
     switch (direction) {
       case "down":
-        depth += distanceInt;
+        aim += distanceInt;
         break;
       case "up":
-        depth -= distanceInt;
+        aim -= distanceInt;
         break;
       case "forward":
         horizontal += distanceInt;
+        depth += aim * distanceInt;
         break;
       default:
         console.log(`hmm... ${direction} isn't a valid direction`);
