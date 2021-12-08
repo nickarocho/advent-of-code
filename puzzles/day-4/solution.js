@@ -1,7 +1,7 @@
 // Node.js setup
 import * as bingo from "./bingo.js";
 const selectedNumbers = bingo.selectedNumbers;
-const boards = [];
+let boards = [];
 for (var i in bingo) {
   if (i.includes("board")) {
     boards.push(bingo[i]);
@@ -9,32 +9,35 @@ for (var i in bingo) {
 }
 // end Node.js setup
 
-function rigBingo() {
-  let winningBoard = null;
-  let winningNumber = null;
-  let winningScore = null;
+function rigBingo(firstOrLastToWin = "first") {
+  let winningBoards = [];
 
   function markBoards(selectedNumber) {
-    boards.forEach((board, boardIdx) => {
-      return board.map((square, i) => {
+    // filter out winners from the set of boards to mark
+    boards = boards.filter((board, boardIdx) => {
+      let isWinner = false;
+      // mark the board
+      board.map((square, i) => {
         if (square === selectedNumber) {
           board[i] = "x";
-          checkForWinner(boards[boardIdx], selectedNumber);
+          // check for a winner; if so, flag it to be removed
+          isWinner = checkForWinner(boards[boardIdx], selectedNumber);
         }
       });
+      // only keep non-winners in the playable boards
+      return !isWinner;
     });
   }
 
   function win(board, number) {
-    winningBoard = board;
-    winningNumber = number;
-    winningScore = calculateWinningScore(winningBoard);
+    winningBoards.push({ board: board, winningNumber: number });
   }
 
   function checkForWinner(board, number) {
     // check rows for winner
     for (let i = 0; i < board.length; i += 5) {
-      if (winningBoard) break;
+      // to avoid unnecessary memory leaks
+      if (winningBoards.length && firstOrLastToWin === "first") break;
       const row = [
         board[i],
         board[i + 1],
@@ -50,7 +53,8 @@ function rigBingo() {
 
     // check cols for winner
     for (let i = 0; i < 5; i++) {
-      if (winningBoard) break;
+      // to avoid unnecessary memory leaks
+      if (winningBoards.length && firstOrLastToWin === "first") break;
       const col = [
         board[i],
         board[i + 5],
@@ -65,28 +69,42 @@ function rigBingo() {
     }
   }
 
-  function calculateWinningScore(board) {
-    const sumOfUnmarked = board.reduce((acc, cur) => {
+  function calculateWinningScore() {
+    // the "final" board will always be the last board in the array, because
+    // if we are looking for the FIRST winning board, the game stops after the
+    // first winning board is found (winningBoards.length === 1); but if we want
+    // to find the LAST winning board, the game continues and pushes winners into
+    // `winningBoards` until we run out of numbers (winningBoards.length === 100)
+    const boardToCalculate = winningBoards[winningBoards.length - 1];
+
+    const sumOfUnmarked = boardToCalculate.board.reduce((acc, cur) => {
       if (cur !== "x") {
         return (acc += cur);
       } else {
         return acc;
       }
     }, 0);
-    return sumOfUnmarked * winningNumber;
+    return sumOfUnmarked * boardToCalculate.winningNumber;
   }
 
   // kicks off the game
   for (let i = 0; i < selectedNumbers.length; i++) {
-    if (!winningBoard) {
+    if (!winningBoards.length) {
       markBoards(selectedNumbers[i]);
     } else {
-      break;
+      if (firstOrLastToWin === "first") {
+        break;
+      } else {
+        markBoards(selectedNumbers[i]);
+      }
     }
   }
 
-  return winningScore;
+  return calculateWinningScore();
 }
 
-const scoreOfFirstBoardToWin = rigBingo();
+const scoreOfFirstBoardToWin = rigBingo("first");
 console.log({ scoreOfFirstBoardToWin });
+
+const scoreOfLastBoardToWin = rigBingo("last");
+console.log({ scoreOfLastBoardToWin });
