@@ -3,27 +3,27 @@ const read = fs.readFileSync("puzzles/day-7/crab-positions.txt");
 let data = read.toString().split(",").map(Number);
 
 function alignCrabs(data) {
-  let sorted = data.sort((a, b) => a - b);
-  let currentBestGasMileage = undefined;
+  let sortedPositions = data.sort((a, b) => a - b);
+  let currentBest = Infinity;
 
+  // loop through all the potential positions (smallest -> largest in sorted data set)
   for (
-    let potentialPosition = 0;
-    potentialPosition <= sorted[sorted.length - 1];
-    potentialPosition++
+    let i = sortedPositions[0];
+    i <= sortedPositions[sortedPositions.length - 1];
+    i++
   ) {
-    // 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
-    let total = 0;
-    for (let j = 0; j < sorted.length; j++) {
-      const distance = Math.abs(sorted[j] - potentialPosition);
-      total += distance;
-    }
+    // calculate the cost per crab at each (i) position (1 space === 1 'gas' unit)
+    const gasCostPerCrab = sortedPositions.map((position) =>
+      Math.abs(i - position)
+    );
+    const combinedGasCost = gasCostPerCrab.reduce((acc, cur) => acc + cur, 0);
 
-    if (total < currentBestGasMileage || currentBestGasMileage === undefined) {
-      currentBestGasMileage = total;
-    }
+    // take the best so far
+    currentBest = Math.min(currentBest, combinedGasCost);
   }
-  return currentBestGasMileage;
+
+  return currentBest;
 }
 
-const optimalHorizontalPosition = alignCrabs(data);
+const optimalHorizontalPosition = alignCrabs(data); // 341534
 console.log({ optimalHorizontalPosition });
