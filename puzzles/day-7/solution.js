@@ -13,8 +13,8 @@ function alignCrabs(data) {
     i++
   ) {
     // calculate the cost per crab at each (i) position (1 space === 1 'gas' unit)
-    const gasCostPerCrab = sortedPositions.map((position) =>
-      Math.abs(i - position)
+    const gasCostPerCrab = sortedPositions.map(
+      (position) => (Math.abs(i - position) * (Math.abs(i - position) + 1)) / 2
     );
     const combinedGasCost = gasCostPerCrab.reduce((acc, cur) => acc + cur, 0);
 
@@ -25,5 +25,5 @@ function alignCrabs(data) {
   return currentBest;
 }
 
-const optimalHorizontalPosition = alignCrabs(data); // 341534
+const optimalHorizontalPosition = alignCrabs(data);
 console.log({ optimalHorizontalPosition });
