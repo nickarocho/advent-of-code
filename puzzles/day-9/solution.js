@@ -5,9 +5,8 @@ let data = read
   .split("\n")
   .map((string) => string.split("").map((reading) => Number(reading)));
 
+let lowPoints = [];
 function findLowPoints(data) {
-  let lowPoints = [];
-
   for (let i = 0; i < data.length; i++) {
     const rowAbove = data[i - 1];
     const row = data[i];
@@ -21,13 +20,13 @@ function findLowPoints(data) {
       const bottom = (rowBelow && rowBelow[j]) ?? Infinity;
 
       if (cell < right && cell < left && cell < top && cell < bottom) {
-        lowPoints.push(cell);
+        lowPoints.push({ value: cell, row: i, col: j });
       }
     }
   }
 
-  return lowPoints.reduce((acc, cur) => acc + (cur + 1), 0);
+  return lowPoints.reduce((acc, cur) => acc + (cur.value + 1), 0);
 }
 
-const result = findLowPoints(data);
-console.log({ result });
+const partOne = findLowPoints(data);
+console.log({ partOne });
