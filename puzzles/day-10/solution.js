@@ -18,6 +18,7 @@ const syntaxValues = {
   "}": 1197,
   ">": 25137,
 };
+let incompleteLines = [];
 
 // utils
 const getMatchingOpeningTag = (closingTag) =>
@@ -28,8 +29,12 @@ const getSyntaxErrorValue = (corruptLine) => {
   return syntaxValues[corruptChar];
 };
 
+const getCompletionChars = (openingChars) =>
+  openingChars.map((openingChar) => pairs[openingChar]).reverse();
+
 // main util which recursively removes 'complete' chunks
-function simplifyLine(line) {
+function simplifyLine(originalLine) {
+  const line = [...originalLine];
   let length = null;
 
   function removeCleanChunks(arr) {
@@ -71,10 +76,36 @@ function calculateSyntaxErrorScore(data) {
       : 0;
 
     sum += syntaxScore;
+
+    if (!simplifiedLine.isCorrupt) {
+      incompleteLines.push(simplifiedLine.line);
+    }
   }
 
   return sum;
 }
 
-const partOne = calculateSyntaxErrorScore(data); // 411471
+function getMiddleCompletionStringScore(lines) {
+  const closingTags = Object.keys(syntaxValues);
+  const completionScores = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const completionChars = getCompletionChars(lines[i]);
+
+    const score = completionChars.reduce((acc, cur) => {
+      const score = closingTags.indexOf(cur) + 1;
+      return acc * 5 + score;
+    }, 0);
+
+    completionScores.push(score);
+  }
+
+  const sortedScores = completionScores.sort((a, b) => a - b);
+  return sortedScores[Math.floor(sortedScores.length / 2)];
+}
+
+const partOne = calculateSyntaxErrorScore(data);
 console.log({ partOne });
+
+const partTwo = getMiddleCompletionStringScore(incompleteLines);
+console.log({ partTwo });
