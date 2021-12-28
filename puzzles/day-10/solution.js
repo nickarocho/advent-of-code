@@ -37,7 +37,7 @@ function simplifyLine(originalLine) {
   const line = [...originalLine];
   let length = null;
 
-  function removeCleanChunks(arr) {
+  function removeImmediatePairs(arr) {
     // recursive base case
     if (!arr || length === arr.length) {
       const isJustIncomplete = arr.every((char) => pairs[char]);
@@ -50,27 +50,27 @@ function simplifyLine(originalLine) {
       const char = arr[i];
       let matchingClosingTag = pairs[char];
 
-      // it IS a closing tag
+      // it IS a closing tag - remove immediate pairs
       if (!matchingClosingTag) {
         if (arr[i - 1] === getMatchingOpeningTag(char)) {
-          // remove (), {}, <>, [], etc. from the line
+          // removes (), {}, <>, [], etc. from the line
           arr.splice(i - 1, 2);
         }
       }
     }
 
     // keep removing pairs until none left
-    return removeCleanChunks(arr);
+    return removeImmediatePairs(arr);
   }
 
-  return removeCleanChunks(line);
+  return removeImmediatePairs(line);
 }
 
-function calculateSyntaxErrorScore(data) {
+function calculateSyntaxErrorScore(lines) {
   let sum = 0;
 
-  for (let i = 0; i < data.length; i++) {
-    const simplifiedLine = simplifyLine(data[i]);
+  for (const line of lines) {
+    const simplifiedLine = simplifyLine(line);
     const syntaxScore = simplifiedLine.isCorrupt
       ? getSyntaxErrorValue(simplifiedLine.line)
       : 0;
@@ -89,12 +89,12 @@ function getMiddleCompletionStringScore(lines) {
   const closingTags = Object.keys(syntaxValues);
   const completionScores = [];
 
-  for (let i = 0; i < lines.length; i++) {
-    const completionChars = getCompletionChars(lines[i]);
+  for (const line of lines) {
+    const completionChars = getCompletionChars(line);
 
     const score = completionChars.reduce((acc, cur) => {
-      const score = closingTags.indexOf(cur) + 1;
-      return acc * 5 + score;
+      const charValue = closingTags.indexOf(cur) + 1;
+      return acc * 5 + charValue;
     }, 0);
 
     completionScores.push(score);
@@ -104,6 +104,7 @@ function getMiddleCompletionStringScore(lines) {
   return sortedScores[Math.floor(sortedScores.length / 2)];
 }
 
+// run it
 const partOne = calculateSyntaxErrorScore(data);
 console.log({ partOne });
 
