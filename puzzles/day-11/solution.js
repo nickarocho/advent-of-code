@@ -1,12 +1,15 @@
 const fs = require("fs");
 const read = fs.readFileSync("puzzles/day-11/octopusenergylevels.txt");
-let data = read
+const data = read
   .toString()
   .split("\n")
   .map((row) => row.split("").map(Number));
 
 let flashed = [];
 let sum = 0;
+
+// clones an array of arrays to avoid mutating original data
+const deepClone = (arrOfArrs) => arrOfArrs.map((arr) => arr.slice());
 
 class Octo {
   constructor(level, row, col, map) {
@@ -82,26 +85,49 @@ function initOctos(map) {
   return map;
 }
 
+function step(map) {
+  map.forEach((row) =>
+    row.forEach((octo) => {
+      octo.step();
+    })
+  );
+}
+
+function runStep(map) {
+  flashed = [];
+  step(map);
+  sum += flashed.length;
+}
+
 function countFlashes(energyMap, steps) {
-  const octoMap = initOctos(energyMap);
+  const dataCopy = deepClone(energyMap);
+  const octoMap = initOctos(dataCopy);
 
   for (let i = 1; i <= steps; i++) {
-    flashed = [];
-    step(octoMap);
-    sum += flashed.length;
-  }
-
-  function step(map) {
-    map.forEach((row) =>
-      row.forEach((octo) => {
-        octo.step();
-      })
-    );
+    runStep(octoMap);
   }
 
   return sum;
 }
 
+const syncronizedMoment = (energyMap) => {
+  const dataCopy = deepClone(energyMap);
+  const octoMap = initOctos(dataCopy);
+  const octoCount = dataCopy.reduce((acc, row) => acc + row.length, 0);
+
+  let syncedAt = null;
+  let step = 0;
+  while (!syncedAt) {
+    step++;
+    runStep(octoMap);
+    if (flashed.length === octoCount) syncedAt = step;
+  }
+
+  return syncedAt;
+};
+
 // run it
 const partOne = countFlashes(data, 100);
-console.log({ partOne }); // 1700
+console.log({ partOne });
+const partTwo = syncronizedMoment(data);
+console.log({ partTwo });
