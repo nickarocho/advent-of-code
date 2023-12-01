@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "nodemon": "^3.0.1",
+    "ts-node": "^10.9.1"
+  },
   "scripts": {
+    "start": "nodemon runSolution.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,5 +20,10 @@
   "bugs": {
     "url": "https://github.com/nickarocho/advent-of-code/issues"
   },
-  "homepage": "https://github.com/nickarocho/advent-of-code#readme"
+  "homepage": "https://github.com/nickarocho/advent-of-code#readme",
+  "devDependencies": {
+    "@types/node": "^20.10.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.2"
+  }
 }
